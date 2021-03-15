@@ -1,0 +1,99 @@
+---
+- name: "Deploying Wordpress High Available Setup"
+  become: true
+  hosts: localhost
+  vars:
+    db_user: "wpuser"
+    db_password: "wpuser123"
+    db_database: "wpdb"
+    db_host: "wordpress-read.c5gkmzimec3r.ap-south-1.rds.amazonaws.com"
+    wp_domain: "zbtech.tk"
+    wp_repo: "https://github.com/zubairzb/wordpress-ha/tree/master"
+
+  tasks:
+
+    - name: "Wordpress-ha : Installing Apache & git"
+      yum:
+        name:
+          - git
+          - httpd
+        state: present
+
+    - name: "Wordpress-ha : Installing php"
+      shell: "amazon-linux-extras install php7.4 -y"
+
+
+    - name: "Wordpress-ha : Restarting/Enabling httpd"
+      file:
+        path: /var/git-wordpress
+        state: directory
+        owner: root
+        group: root
+        mode: 700
+
+    - name: "Wordpress-ha : Creating Virtualhost Configuration"
+      template:
+        src: ./virtualhost.conf.tmpl
+        dest: "/etc/httpd/conf.d/{{ wp_domain }}.conf"
+        owner: apache
+        group: apache
+
+
+    - name: "Wordpress-ha : Creating Virtualhost Directory"
+      file:
+        path: "/var/www/html/{{ wp_domain }}"
+        state: directory
+        owner: apache
+        group: apache
+
+    - name: "Wordpress-ha : Cloning Wordpress"
+      git:
+        repo: "{{ wp_repo }}"
+        dest: /var/git-wordpress/
+      register: git_status
+
+    - name: "Wordpress-ha : Copying Wordpress Content"
+      when: git_status.changed == true
+      copy:
+        src: /var/git-wordpress/
+        dest: /var/www/html/{{ wp_domain }}/
+        remote_src: true
+        owner: apache
+        group: apache
+
+    - name: "Wordpress-ha : Creating wp-config.php"
+      template:
+        src: ./wp-config.php.tmpl
+        dest: "/var/www/html/{{ wp_domain }}/wp-config.php"
+        owner: apache
+        group: apache
+    
+    - name: "Wordpress-ha : Adding hostname.php"
+      copy:
+        src: ./hostname.php
+        dest: "/var/www/html/{{ wp_domain }}/hostname.php"
+        owner: apache
+        group: apache
+
+    - name: "Wordpress-ha : Restarting/Enabling httpd"
+      service:
+        name: httpd
+        state: restarted
+        enabled: true
+    
+    - name: "Wordpress-ha : removing .git directory"
+      file:
+        path: "/var/www/html/{{ wp_domain }}/.git"
+        state: absent
+
+
+
+
+
+
+
+
+
+
+
+

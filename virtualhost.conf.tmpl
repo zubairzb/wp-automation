@@ -1,0 +1,14 @@
+<virtualhost *:80>
+
+  servername  {{ wp_domain }}
+  documentroot /var/www/html/{{ wp_domain }}
+
+# RewriteEngine On
+# RewriteCond %{HTTP:X-Forwarded-Proto} =http
+# RewriteRule .* https://%{HTTP:Host}%{REQUEST_URI} [L,R=permanent]
+
+  <directory "/var/www/html/{{ wp_domain }}">
+     allowoverride all
+  </directory>
+
+</virtualhost>
