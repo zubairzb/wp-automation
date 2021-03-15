@@ -8,7 +8,7 @@
     db_database: "wpdb"
     db_host: "wordpress-read.c5gkmzimec3r.ap-south-1.rds.amazonaws.com"
     wp_domain: "zbtech.tk"
-    wp_repo: "https://github.com/zubairzb/wordpress-ha/tree/master"
+    wp_repo: "https://github.com/zubairzb/wp-ha"
 
   tasks:
 
